@@ -17,15 +17,25 @@ int cmd_exit(char **args);
 int cmd_echo(char **args);
 int cmd_type(char **args);
 int cmd_pwd(char **args);
+int cmd_cd(char **args);
 
 LookupTable commands[] = {
 		{"exit", cmd_exit},
 		{"echo", cmd_echo},
 		{"type", cmd_type},
-		{"pwd", cmd_pwd}
+		{"pwd", cmd_pwd},
+		{"cd", cmd_cd}
 };
 
 // function declarations
+int cmd_cd(char **args) {
+		if(chdir(args[0]) == -1){
+			printf("cd: %s: No such file or directory\n", args[0]);
+			return 1;	
+		}
+
+		return 0;
+}
 
 int cmd_pwd(char **args) {
 		char cwd[PATH_MAX];

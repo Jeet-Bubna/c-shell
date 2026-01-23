@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 typedef int (*cmd_fn)(char **args);
 
@@ -57,16 +58,17 @@ int cmd_type(char **args){
 
 	while(token){
 		char fullAdress[512];
-		snprintf(fullAdress, sizeof(fullAdress), "%s/%s", token, params);
+		snprintf(fullAdress, sizeof(fullAdress), "%s/%s", token, args[0]);
 		if(access(fullAdress, X_OK) == 0){
-			printf("%s is %s\n", params, fullAdress);
+			printf("%s is %s\n", args[0], fullAdress);
 			free(path_copy);
 			return 0;
 		}
 		token = strtok(NULL, ":");
 	}
 
-	printf("%s: not found\n", params);
+	printf("%s: not found\n", args[0]);
+	free(path_copy);
 	return 1;
 }
 
@@ -89,6 +91,22 @@ int default_command(char *text) {
 		return 0;
 }
 
+int execprogram(char *args[]){
+
+	pid_t pid = fork();
+
+	if(pid == 0){
+		// child process
+		execvp(args[0], args);
+		printf("%s: command not found\n", args[0]);
+		exit(1);
+	} else{
+		wait(NULL);
+	}
+
+	return 0;
+}
+
 int eval(char *text) {
     char *args[64];
     int argc = 0;
@@ -108,7 +126,8 @@ int eval(char *text) {
         }
     }
 
-    default_command(args[0]);
+		execprogram(args);
+
     return 0;
 }
 

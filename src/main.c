@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <limits.h>   // For PATH_MAX
 
 typedef int (*cmd_fn)(char **args);
 
@@ -15,14 +16,25 @@ typedef struct {
 int cmd_exit(char **args);
 int cmd_echo(char **args);
 int cmd_type(char **args);
+int cmd_pwd(char **args);
 
 LookupTable commands[] = {
 		{"exit", cmd_exit},
 		{"echo", cmd_echo},
-		{"type", cmd_type}
+		{"type", cmd_type},
+		{"pwd", cmd_pwd}
 };
 
 // function declarations
+
+int cmd_pwd(char **args) {
+		char cwd[PATH_MAX];
+
+		if(getcwd(cwd, sizeof(cwd)) != NULL){
+			printf("%s\n", cwd);
+		}
+}
+
 int cmd_exit(char **args) {
 		exit(0);
 		return 0;

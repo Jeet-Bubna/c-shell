@@ -2,48 +2,71 @@
 #include <stdlib.h>
 #include <string.h>
 
-// returns the command to be evaluated
-char *read_command(){
-  char buffer[100];
+typedef int (*cmd_fn)(char **args);
 
-  printf("$ ");
-  fgets(buffer, 100, stdin);
+typedef struct {
+    char *name;
+    cmd_fn func;
+} LookupTable;
 
-  buffer[strcspn(buffer, "\n")] = '\0';
-
-  char *text = malloc(strlen(buffer) + 1 ); // +1 because strlen doenst inclde null terminator '\0'
-  strcpy(text, buffer);
-
-  return text;
+int cmd_exit(char **args) {
+    exit(0);
+    return 0;
 }
 
-// default command for now, which is just command not found
-int default_command(char *text){
-  printf("%s: command not found\n", text);
-  return 0;
+LookupTable commands[] = {
+    {"exit", cmd_exit}
+};
+
+char *read_command() {
+    char buffer[100];
+
+    printf("$ ");
+    fgets(buffer, 100, stdin);
+
+    buffer[strcspn(buffer, "\n")] = '\0';
+
+    char *text = malloc(strlen(buffer) + 1);
+    strcpy(text, buffer);
+
+    return text;
 }
 
-// parses and executes the command
-int eval(char *text){
-  // parsing
-  char command[] = "default";
-
-  // executing
-  default_command(text);
-  return 0;
+int default_command(char *text) {
+    printf("%s: command not found\n", text);
+    return 0;
 }
 
-int main(int argc, char *argv[]) {
-  
-  while(1){
-    // Flush after every printf
-    setbuf(stdout, NULL);
+int eval(char *text) {
+    char *func = strtok(text, " ");
+    if (!func) return 0;  // empty input
 
-    // REPL loop
-    char *text = read_command();
-    eval(text);
-    free(text);
-  }
+    char *param = strtok(NULL, " ");
+    char *rest = NULL;
 
-  return 0;
+    if (param) {
+        rest = text + strlen(func) + strlen(param) + 2;
+    }
+
+    // Build args array
+    char *args[3] = {func, param, rest};
+
+    for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
+        if (strcmp(commands[i].name, func) == 0) {
+            return commands[i].func(args);
+        }
+    }
+
+    default_command(func);
+    return 0;
+}
+
+int main() {
+    while (1) {
+        setbuf(stdout, NULL);
+        char *text = read_command();
+        eval(text);
+        free(text);
+    }
+    return 0;
 }

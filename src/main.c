@@ -14,8 +14,16 @@ int cmd_exit(char **args) {
     return 0;
 }
 
+int cmd_echo(char **args){
+  char *params = args[0];
+  char *rest = args[1];
+
+  printf("%s %s\n", params, rest);
+}
+
 LookupTable commands[] = {
-    {"exit", cmd_exit}
+    {"exit", cmd_exit},
+    {"echo", cmd_echo}
 };
 
 char *read_command() {
@@ -49,7 +57,7 @@ int eval(char *text) {
     }
 
     // Build args array
-    char *args[3] = {func, param, rest};
+    char *args[2] = {param, rest};
 
     for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
         if (strcmp(commands[i].name, func) == 0) {

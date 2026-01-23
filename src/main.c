@@ -9,6 +9,18 @@ typedef struct {
     cmd_fn func;
 } LookupTable;
 
+// forward declarations
+
+int cmd_exit(char **args);
+int cmd_echo(char **args);
+int cmd_type(char **args);
+
+LookupTable commands[] = {
+    {"exit", cmd_exit},
+    {"echo", cmd_echo},
+    {"type", cmd_type}
+};
+
 int cmd_exit(char **args) {
     exit(0);
     return 0;
@@ -19,12 +31,22 @@ int cmd_echo(char **args){
   char *rest = args[1];
 
   printf("%s %s\n", params, rest);
+  return 0;
 }
 
-LookupTable commands[] = {
-    {"exit", cmd_exit},
-    {"echo", cmd_echo}
-};
+int cmd_type(char **args){
+  char *params = args[0];
+  
+  for(int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++){
+    if(strcmp(commands[i].name, params) == 0){
+      printf("%s is a shell builtin\n", params);
+      return 0;
+    }
+  }
+  printf("%s: not found\n", params);
+  return 1;
+}
+
 
 char *read_command() {
     char buffer[100];
